@@ -1,11 +1,19 @@
 import SwiftUI
 import MapKit
 
+// This view displays the detailed information for a selected restaurant,
+// including its name, image, rating, address, location on the map,
+// and a button to open directions in Apple Maps.
 struct RestaurantDetailView: View {
     let restaurant: Restaurant
+
+    // Access to the favorites view model to toggle/save favorite status
     @EnvironmentObject var favoritesVM: FavoritesViewModel
+
+    // Environment variable to allow dismissing this view (for back navigation)
     @Environment(\.dismiss) private var dismiss
 
+    // Map camera position — currently centered on a fixed location (mock location for now)
     @State private var cameraPosition = MapCameraPosition.region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 33.307575, longitude: -111.842104),
@@ -13,14 +21,17 @@ struct RestaurantDetailView: View {
         )
     )
 
+    // Static pin coordinate for map marker (will later be dynamic from API)
     private var pinLocation: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: 33.307575, longitude: -111.842104)
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            // MARK: - Header
+            
+            // MARK: - Custom Header Bar with Back Button
             HStack {
+                // Custom back button to dismiss the detail view
                 Button(action: {
                     dismiss()
                 }) {
@@ -30,6 +41,7 @@ struct RestaurantDetailView: View {
                         .padding(.trailing, 8)
                 }
 
+                // App title
                 Text("Food Finder")
                     .font(.system(size: 50, weight: .bold))
                     .italic()
@@ -38,6 +50,7 @@ struct RestaurantDetailView: View {
 
                 Spacer()
 
+                // App logo
                 Image("AppLogo")
                     .resizable()
                     .frame(width: 60, height: 60)
@@ -48,10 +61,11 @@ struct RestaurantDetailView: View {
             .padding(.bottom, 10)
             .background(Color(red: 1.0, green: 0.3, blue: 0.3))
 
+            // MARK: - Scrollable Detail Content
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     
-                    // MARK: - Title with Favorite
+                    // MARK: - Restaurant Title with Heart (Favorite) Toggle
                     HStack {
                         Text("\(restaurant.name):")
                             .font(.system(size: 28, weight: .bold))
@@ -59,6 +73,7 @@ struct RestaurantDetailView: View {
 
                         Spacer()
 
+                        // Favorite button (filled if already a favorite)
                         Button(action: {
                             favoritesVM.toggleFavorite(restaurant)
                         }) {
@@ -68,9 +83,9 @@ struct RestaurantDetailView: View {
                         }
                     }
 
-                    // MARK: - Image + Info
+                    // MARK: - Restaurant Image + Quick Info Block
                     HStack(alignment: .top, spacing: 12) {
-                        Image("KazuRamen")
+                        Image("KazuRamen") // Placeholder image from assets
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 100, height: 100)
@@ -78,7 +93,7 @@ struct RestaurantDetailView: View {
                             .cornerRadius(8)
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("⭐️⭐️⭐️⭐️☆")
+                            Text("⭐️⭐️⭐️⭐️☆") // Mock rating stars
                             Text(restaurant.priceLevel)
                                 .font(.headline)
                             Text(restaurant.address)
@@ -87,11 +102,11 @@ struct RestaurantDetailView: View {
                         }
                     }
 
-                    // MARK: - Description
+                    // MARK: - Restaurant Description (static for now)
                     Text("Serving ramen noodles and traditional dishes – teriyaki, katsu, sushi rolls – with a variety of Japanese sake and beer. Located in Gilbert, AZ.")
                         .font(.body)
 
-                    // MARK: - Map
+                    // MARK: - Interactive Map with Marker
                     MapReader { proxy in
                         Map(position: $cameraPosition) {
                             Marker(restaurant.name, coordinate: pinLocation)
@@ -100,7 +115,7 @@ struct RestaurantDetailView: View {
                         .cornerRadius(12)
                     }
 
-                    // MARK: - Directions Button
+                    // MARK: - Get Directions Button (opens Apple Maps)
                     Button(action: {
                         openInMaps()
                     }) {
@@ -122,9 +137,10 @@ struct RestaurantDetailView: View {
 
             Spacer()
         }
-        .navigationBarHidden(true)
+        .navigationBarHidden(true) // Hides native nav bar for custom layout
     }
 
+    // Opens Apple Maps with the pinned location
     private func openInMaps() {
         let placemark = MKPlacemark(coordinate: pinLocation)
         let mapItem = MKMapItem(placemark: placemark)
